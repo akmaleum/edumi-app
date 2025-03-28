@@ -15,34 +15,28 @@ class HomeScreen extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 20.0,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Welcome Section
                 const Text(
                   'Welcome!',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const Text(
-                  "Let's Find Your Perfect (Product)",
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.black54,
-                  ),
+                  "Let's Find Your Perfect Plan",
+                  style: TextStyle(fontSize: 18, color: Colors.black54),
                 ),
                 const SizedBox(height: 20),
 
                 // Services Section
                 const Text(
                   'Services',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
                 Row(
@@ -61,7 +55,8 @@ class HomeScreen extends StatelessWidget {
                             children: [
                               Container(
                                 height: 100,
-                                color: Colors.grey[200], // Placeholder for image
+                                color:
+                                    Colors.grey[200], // Placeholder for image
                               ),
                               const SizedBox(height: 10),
                               const Text(
@@ -78,7 +73,9 @@ class HomeScreen extends StatelessWidget {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => const ConsultationSchedulingScreen(),
+                                      builder:
+                                          (context) =>
+                                              const ConsultationSchedulingScreen(),
                                     ),
                                   );
                                 },
@@ -112,7 +109,8 @@ class HomeScreen extends StatelessWidget {
                             children: [
                               Container(
                                 height: 100,
-                                color: Colors.grey[200], // Placeholder for image
+                                color:
+                                    Colors.grey[200], // Placeholder for image
                               ),
                               const SizedBox(height: 10),
                               const Text(
@@ -149,10 +147,7 @@ class HomeScreen extends StatelessWidget {
                 // Blogposts Section
                 const Text(
                   'Blogposts',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
                 // Search Bar
@@ -360,9 +355,7 @@ class HomeScreen extends StatelessWidget {
           } else if (index == 3) {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => const ProfileScreen(),
-              ),
+              MaterialPageRoute(builder: (context) => const ProfileScreen()),
             );
           }
         },
