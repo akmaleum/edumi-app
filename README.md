@@ -1,4 +1,4 @@
-# edumi
+# EDUMi Sdn. Bhd. Mobile App
 
 A new Flutter project.
 
