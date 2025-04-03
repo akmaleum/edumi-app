@@ -56,7 +56,7 @@ class ApplicationStatusScreen extends StatelessWidget {
                   _buildTimelineStep(
                     stepNumber: 3,
                     title: 'Application Review',
-                    subtitle: '- in progress...',
+                    subtitle: '- in progress',
                     isCompleted: false,
                     isActive: true,
                   ),
