@@ -122,7 +122,7 @@ class _SignInScreenState extends State<SignInScreen> {
   bool _obscurePassword = true;
 
   // Hardcoded credentials for testing
-  final String _correctUsername = 'akmaleum';
+  final String _correctUsername = 'akmal';
   final String _correctPassword = '1234';
 
   void _signIn() {
