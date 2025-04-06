@@ -46,9 +46,9 @@ class LoginScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Image.asset(
-                  'assets/images/logo.png',
+                  'assets/images/edumi_logo.png',
                   height: 100,
-                  width: 100,
+                  width: 300,
                   errorBuilder: (context, error, stackTrace) => const Icon(Icons.error, size: 100),
                 ),
                 const SizedBox(height: 16),
@@ -198,9 +198,9 @@ class _SignInScreenState extends State<SignInScreen> {
                     child: Column(
                       children: [
                         Image.asset(
-                          'assets/images/logo.png',
+                          'assets/images/edumi_logo.png',
                           height: 100,
-                          width: 100,
+                          width: 300,
                           errorBuilder: (context, error, stackTrace) => const Icon(Icons.error, size: 100),
                         ),
                         const SizedBox(height: 16),
