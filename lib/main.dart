@@ -53,14 +53,6 @@ class LoginScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  'EDUMI.my',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                const Text(
                   'One-Stop Centre for',
                   style: TextStyle(
                     fontSize: 16,
