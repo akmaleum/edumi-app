@@ -1,6 +1,9 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Add this import
 import 'home.dart';
+import 'db_helper.dart';
 
 void main() {
   runApp(const EdumiApp());
@@ -21,7 +24,7 @@ class EdumiApp extends StatelessWidget {
       routes: {
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignUpScreen(),
-        '/signin': (context) => const SignInScreen(), // Add the new route
+        '/signin': (context) => const SignInScreen(),
         '/home': (context) => const HomeScreen(),
       },
     );
@@ -42,14 +45,21 @@ class LoginScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo (Placeholder - replace with your logo)
                 Image.asset(
-                  'assets/images/edumi_logo.png',
+                  'assets/images/logo.png',
                   height: 100,
-                  width: 300,
+                  width: 100,
                   errorBuilder: (context, error, stackTrace) => const Icon(Icons.error, size: 100),
                 ),
                 const SizedBox(height: 16),
+                const Text(
+                  'EDUMI.my',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
                 const Text(
                   'One-Stop Centre for',
                   style: TextStyle(
@@ -67,7 +77,7 @@ class LoginScreen extends StatelessWidget {
                 const SizedBox(height: 40),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/signin'); // Navigate to SignInScreen
+                    Navigator.pushNamed(context, '/signin');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
@@ -120,31 +130,47 @@ class _SignInScreenState extends State<SignInScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isLoading = false;
 
-  // Hardcoded credentials for testing
-  final String _correctUsername = 'akmal';
-  final String _correctPassword = '1234';
-
-  void _signIn() {
+  void _signIn() async {
     if (_formKey.currentState!.validate()) {
-      String enteredUsername = _usernameController.text;
-      String enteredPassword = _passwordController.text;
+      setState(() {
+        _isLoading = true;
+      });
 
-      if (enteredUsername == _correctUsername && enteredPassword == _correctPassword) {
-        // Successful sign-in, navigate to HomeScreen
+      try {
+        // Query the database for the user
+        final user = await DatabaseHelper.instance.getUserByUsername(_usernameController.text);
+
+        if (user == null) {
+          throw 'Username not found';
+        }
+
+        if (user['password'] != _passwordController.text) {
+          throw 'Incorrect password';
+        }
+
+        // Save the username in shared_preferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isLoggedIn', true);
+        await prefs.setString('username', _usernameController.text);
+
         Navigator.pushNamedAndRemoveUntil(
           context,
           '/home',
-          (Route<dynamic> route) => false, // Clear navigation stack
+          (Route<dynamic> route) => false,
         );
-      } else {
-        // Show error message
+      } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid username or password'),
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
@@ -171,14 +197,21 @@ class _SignInScreenState extends State<SignInScreen> {
                   Center(
                     child: Column(
                       children: [
-                        // Logo (Placeholder - replace with your logo)
                         Image.asset(
-                          'assets/images/edumi_logo.png',
+                          'assets/images/logo.png',
                           height: 100,
-                          width: 300,
+                          width: 100,
                           errorBuilder: (context, error, stackTrace) => const Icon(Icons.error, size: 100),
                         ),
                         const SizedBox(height: 16),
+                        const Text(
+                          'EDUMI.my',
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -236,25 +269,27 @@ class _SignInScreenState extends State<SignInScreen> {
                     },
                   ),
                   const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: _signIn,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      'Sign In',
-                      style: TextStyle(fontSize: 18, color: Colors.white),
-                    ),
-                  ),
+                  _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : ElevatedButton(
+                          onPressed: _signIn,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            minimumSize: const Size(double.infinity, 50),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text(
+                            'Sign In',
+                            style: TextStyle(fontSize: 18, color: Colors.white),
+                          ),
+                        ),
                   const SizedBox(height: 16),
                   Center(
                     child: GestureDetector(
                       onTap: () {
-                        Navigator.pop(context); // Navigate back to LoginScreen
+                        Navigator.pop(context);
                       },
                       child: const Text(
                         'Back to Login',
@@ -276,8 +311,138 @@ class _SignInScreenState extends State<SignInScreen> {
 }
 
 // Sign Up Screen (Create Account)
-class SignUpScreen extends StatelessWidget {
+class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
+
+  @override
+  _SignUpScreenState createState() => _SignUpScreenState();
+}
+
+class _SignUpScreenState extends State<SignUpScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _telephoneController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _telephoneController.text = '+60';
+    _telephoneController.selection = TextSelection.fromPosition(
+      TextPosition(offset: _telephoneController.text.length),
+    );
+  }
+
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _usernameController.dispose();
+    _telephoneController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  String? _validateRequired(String? value, String fieldName) {
+    if (value == null || value.isEmpty) {
+      return '$fieldName is required';
+    }
+    return null;
+  }
+
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Email is required';
+    }
+    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+    if (!emailRegex.hasMatch(value)) {
+      return 'Please enter a valid email';
+    }
+    return null;
+  }
+
+  String? _validateTelephone(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Telephone number is required';
+    }
+    if (!value.startsWith('+60')) {
+      return 'Telephone number must start with +60';
+    }
+    final number = value.substring(3);
+    final phoneRegex = RegExp(r'^[1-9]\d{8,9}$');
+    if (!phoneRegex.hasMatch(number)) {
+      return 'Please enter a valid Malaysian phone number (9-10 digits after +60)';
+    }
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Password is required';
+    }
+    if (value.length < 6) {
+      return 'Password must be at least 6 characters long';
+    }
+    return null;
+  }
+
+  Future<void> _createAccount() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        final usernameExists = await DatabaseHelper.instance.checkUsernameExists(_usernameController.text);
+        if (usernameExists) {
+          throw 'Username already exists';
+        }
+
+        final emailExists = await DatabaseHelper.instance.checkEmailExists(_emailController.text);
+        if (emailExists) {
+          throw 'Email already exists';
+        }
+
+        final user = {
+          'firstName': _firstNameController.text,
+          'lastName': _lastNameController.text,
+          'username': _usernameController.text,
+          'telephone': _telephoneController.text,
+          'email': _emailController.text,
+          'password': _passwordController.text,
+          'createdAt': DateTime.now().toIso8601String(),
+        };
+
+        await DatabaseHelper.instance.insertUser(user);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Account created successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        Navigator.pop(context);
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -286,127 +451,155 @@ class SignUpScreen extends StatelessWidget {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Column(
-                    children: [
-                      // Logo (Placeholder - replace with your logo)
-                      Image.asset(
-                        'assets/images/edumi_logo.png',
-                        height: 70,
-                        width: 300,
-                        errorBuilder: (context, error, stackTrace) => const Icon(Icons.error, size: 100),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Column(
+                      children: [
+                        Image.asset(
+                          'assets/images/edumi_logo.png',
+                          height: 70,
+                          width: 300,
+                          errorBuilder: (context, error, stackTrace) => const Icon(Icons.error, size: 100),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Create Account',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  TextFormField(
+                    controller: _firstNameController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      const SizedBox(height: 16),
-                      
+                      labelText: 'First Name',
+                      prefixIcon: const Icon(Icons.person),
+                    ),
+                    validator: (value) => _validateRequired(value, 'First Name'),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _lastNameController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      labelText: 'Last Name',
+                      prefixIcon: const Icon(Icons.person),
+                    ),
+                    validator: (value) => _validateRequired(value, 'Last Name'),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _usernameController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      labelText: 'Username',
+                      prefixIcon: const Icon(Icons.person),
+                    ),
+                    validator: (value) => _validateRequired(value, 'Username'),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _telephoneController,
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      labelText: 'Telephone No.',
+                      prefixIcon: const Icon(Icons.phone),
+                    ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.deny(RegExp(r'^(\+60)?$')),
+                      FilteringTextInputFormatter.allow(RegExp(r'[\+0-9]')),
                     ],
+                    validator: _validateTelephone,
                   ),
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Create Account',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      labelText: 'Email',
+                      prefixIcon: const Icon(Icons.email),
                     ),
-                    labelText: 'First Name',
-                    prefixIcon: const Icon(Icons.person),
+                    validator: _validateEmail,
                   ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: _obscurePassword,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      labelText: 'Password',
+                      prefixIcon: const Icon(Icons.lock),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
                     ),
-                    labelText: 'Last Name',
-                    prefixIcon: const Icon(Icons.person),
+                    validator: _validatePassword,
                   ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    labelText: 'Username',
-                    prefixIcon: const Icon(Icons.person),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    labelText: 'Telephone No.',
-                    prefixIcon: const Icon(Icons.phone),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    labelText: 'Email',
-                    prefixIcon: const Icon(Icons.email),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    labelText: 'Password',
-                    prefixIcon: const Icon(Icons.lock),
-                    suffixIcon: const Icon(Icons.visibility),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () {
-                    // Add create account logic here
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text(
-                    'Create account',
-                    style: TextStyle(fontSize: 18, color: Colors.white),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Center(
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text(
-                      'Already have an account? Login here',
-                      style: TextStyle(
-                        color: Colors.black54,
-                        decoration: TextDecoration.underline,
+                  const SizedBox(height: 24),
+                  _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : ElevatedButton(
+                          onPressed: _createAccount,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            minimumSize: const Size(double.infinity, 50),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text(
+                            'Create account',
+                            style: TextStyle(fontSize: 18, color: Colors.white),
+                          ),
+                        ),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text(
+                        'Already have an account? Login here',
+                        style: TextStyle(
+                          color: Colors.black54,
+                          decoration: TextDecoration.underline,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

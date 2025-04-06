@@ -4,7 +4,7 @@ import 'consult.dart';
 import 'notifications.dart';
 import 'status.dart';
 import 'profile.dart';
-import 'widget/navbar.dart'; // Import the custom nav bar
+import 'widget/navbar.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -15,127 +15,138 @@ class HomeScreen extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 20.0,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Welcome Section
                 const Text(
                   'Welcome!',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const Text(
-                  "Let's Find Your Perfect Plan",
-                  style: TextStyle(fontSize: 18, color: Colors.black54),
+                  "Let's Find Your Perfect (Product)",
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.black54,
+                  ),
                 ),
                 const SizedBox(height: 20),
-
-                // Services Section
                 const Text(
                   'Services',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Consultation Scheduling Card
                     Expanded(
-                      child: Card(
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            children: [
-                              Container(
-                                height: 100,
-                                color:
-                                    Colors.grey[200], // Placeholder for image
-                              ),
-                              const SizedBox(height: 10),
-                              const Text(
-                                'Consultation Scheduling',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                      child: SizedBox(
+                        height: 220,
+                        child: Card(
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(
+                                  height: 100,
+                                  color: Colors.grey[200],
                                 ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 10),
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (context) =>
-                                              const ConsultationSchedulingScreen(),
+                                const SizedBox(height: 10),
+                                const Text(
+                                  'Consultation Scheduling',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 2,
+                                ),
+                                const SizedBox(height: 10),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const ConsultationSchedulingScreen(),
+                                      ),
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    minimumSize: const Size(double.infinity, 40),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
                                     ),
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Text(
+                                    'Book now',
+                                    style: TextStyle(color: Colors.white),
                                   ),
                                 ),
-                                child: const Text(
-                                  'Book now',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
                     const SizedBox(width: 16),
-                    // Career Advice Card
                     Expanded(
-                      child: Card(
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            children: [
-                              Container(
-                                height: 100,
-                                color:
-                                    Colors.grey[200], // Placeholder for image
-                              ),
-                              const SizedBox(height: 10),
-                              const Text(
-                                'Career Advice',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                      child: SizedBox(
+                        height: 220,
+                        child: Card(
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(
+                                  height: 100,
+                                  color: Colors.grey[200],
                                 ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 33),
-                              ElevatedButton(
-                                onPressed: () {},
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
+                                const SizedBox(height: 10),
+                                const Text(
+                                  'Career Advice',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 2,
+                                ),
+                                const SizedBox(height: 10),
+                                ElevatedButton(
+                                  onPressed: () {},
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    minimumSize: const Size(double.infinity, 40),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Seek advice',
+                                    style: TextStyle(color: Colors.white),
                                   ),
                                 ),
-                                child: const Text(
-                                  'Seek advice',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -143,14 +154,14 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 20),
-
-                // Blogposts Section
                 const Text(
                   'Blogposts',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 10),
-                // Search Bar
                 TextField(
                   decoration: InputDecoration(
                     hintText: 'Search topics...',
@@ -161,7 +172,6 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 10),
-                // Category Chips
                 Wrap(
                   spacing: 8.0,
                   children: [
@@ -184,7 +194,6 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 10),
-                // Blog Post Cards
                 Card(
                   elevation: 2,
                   shape: RoundedRectangleBorder(
@@ -197,7 +206,7 @@ class HomeScreen extends StatelessWidget {
                         Container(
                           width: 80,
                           height: 80,
-                          color: Colors.grey[200], // Placeholder for image
+                          color: Colors.grey[200],
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -245,7 +254,7 @@ class HomeScreen extends StatelessWidget {
                         Container(
                           width: 80,
                           height: 80,
-                          color: Colors.grey[200], // Placeholder for image
+                          color: Colors.grey[200],
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -293,7 +302,7 @@ class HomeScreen extends StatelessWidget {
                         Container(
                           width: 80,
                           height: 80,
-                          color: Colors.grey[200], // Placeholder for image
+                          color: Colors.grey[200],
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -355,7 +364,9 @@ class HomeScreen extends StatelessWidget {
           } else if (index == 3) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const ProfileScreen()),
+              MaterialPageRoute(
+                builder: (context) => const ProfileScreen(),
+              ),
             );
           }
         },
