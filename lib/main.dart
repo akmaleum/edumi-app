@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Add this import
 import 'home.dart';
-import 'db_helper.dart';
+import 'database_helper.dart';
 
 void main() {
   runApp(const EdumiApp());
