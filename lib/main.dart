@@ -131,18 +131,14 @@ class _SignInScreenState extends State<SignInScreen> {
       });
 
       try {
-        // Query the database for the user
         final user = await DatabaseHelper.instance.getUserByUsername(_usernameController.text);
-
         if (user == null) {
           throw 'Username not found';
         }
-
         if (user['password'] != _passwordController.text) {
           throw 'Incorrect password';
         }
 
-        // Save the username in shared_preferences
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('isLoggedIn', true);
         await prefs.setString('username', _usernameController.text);

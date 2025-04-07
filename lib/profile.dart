@@ -4,6 +4,8 @@ import 'edit_profile.dart';
 import 'notifications.dart';
 import 'status.dart';
 import 'widget/navbar.dart'; // Import the custom nav bar
+import 'database_helper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -13,11 +15,34 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  // Initial profile information
-  String firstName = 'Akmal';
-  String lastName = 'Hisyam';
-  String username = '@akmalhisyamriza';
-  String email = 'akmalhisyamriza@gmail.com';
+  String firstName = '';
+  String lastName = '';
+  String username = '';
+  String email = '';
+  int? userId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final storedUsername = prefs.getString('username');
+    if (storedUsername != null) {
+      final user = await DatabaseHelper.instance.getUserByUsername(storedUsername);
+      if (user != null) {
+        setState(() {
+          userId = user['id'];
+          firstName = user['firstName'];
+          lastName = user['lastName'];
+          username = user['username'];
+          email = user['email'];
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
