@@ -1,14 +1,14 @@
+// lib/database_helper.dart
 import 'dart:io';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:path/path.dart' as p;
 
 class DatabaseHelper {
   late final Database db;
+  static final DatabaseHelper instance = DatabaseHelper._init();
 
-  static var instance;
-
-  DatabaseHelper() {
-    final dbPath = p.join(Directory.current.path, 'database.db');
+  DatabaseHelper._init() {
+    final dbPath = p.join(Directory.current.path, 'db.sqlite3');
     db = sqlite3.open(dbPath);
     _createTableIfNotExists();
   }

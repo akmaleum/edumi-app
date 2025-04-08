@@ -407,7 +407,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           'createdAt': DateTime.now().toIso8601String(),
         };
 
-        await DatabaseHelper.instance.insertUser(user);
+        DatabaseHelper.instance.insertUser(user);
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

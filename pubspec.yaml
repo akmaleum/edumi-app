@@ -30,8 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  sqlite3: ^2.0.0
-  path: ^1.8.0
+  sqlite3: ^2.4.0
+  path: ^1.8.3
   shared_preferences: ^2.2.0
 
   # The following adds the Cupertino Icons font to your application.
