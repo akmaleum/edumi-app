@@ -1,9 +1,8 @@
-// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Add this import
+import 'package:shared_preferences/shared_preferences.dart';
 import 'home.dart';
-import 'database_helper.dart';
+import 'api/api_service.dart';
 
 void main() {
   runApp(const EdumiApp());
@@ -31,7 +30,6 @@ class EdumiApp extends StatelessWidget {
   }
 }
 
-// Login Screen (Sign In / Sign Up)
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
@@ -53,18 +51,20 @@ class LoginScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  'One-Stop Centre for',
+                  'EDUMI.my',
                   style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.black54,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
                   ),
                 ),
                 const Text(
+                  'One-Stop Centre for',
+                  style: TextStyle(fontSize: 16, color: Colors.black54),
+                ),
+                const Text(
                   'Global Education Excellence',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.black54,
-                  ),
+                  style: TextStyle(fontSize: 16, color: Colors.black54),
                 ),
                 const SizedBox(height: 40),
                 ElevatedButton(
@@ -109,7 +109,6 @@ class LoginScreen extends StatelessWidget {
   }
 }
 
-// Sign In Screen (Username and Password Prompt)
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
 
@@ -131,17 +130,16 @@ class _SignInScreenState extends State<SignInScreen> {
       });
 
       try {
-        final user = await DatabaseHelper.instance.getUserByUsername(_usernameController.text);
-        if (user == null) {
-          throw 'Username not found';
-        }
-        if (user['password'] != _passwordController.text) {
-          throw 'Incorrect password';
-        }
+        final apiService = ApiService();
+        final user = await apiService.login(
+          _usernameController.text,
+          _passwordController.text,
+        );
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('isLoggedIn', true);
-        await prefs.setString('username', _usernameController.text);
+        await prefs.setInt('userId', user.id);
+        await prefs.setString('username', user.username);
 
         Navigator.pushNamedAndRemoveUntil(
           context,
@@ -176,7 +174,10 @@ class _SignInScreenState extends State<SignInScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 40.0,
+            ),
             child: Form(
               key: _formKey,
               child: Column(
@@ -206,10 +207,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   const SizedBox(height: 20),
                   const Text(
                     'Sign In',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 20),
                   TextFormField(
@@ -298,7 +296,6 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 }
 
-// Sign Up Screen (Create Account)
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
 
@@ -387,27 +384,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
       });
 
       try {
-        final usernameExists = await DatabaseHelper.instance.checkUsernameExists(_usernameController.text);
-        if (usernameExists) {
-          throw 'Username already exists';
-        }
-
-        final emailExists = await DatabaseHelper.instance.checkEmailExists(_emailController.text);
-        if (emailExists) {
-          throw 'Email already exists';
-        }
-
-        final user = {
-          'firstName': _firstNameController.text,
-          'lastName': _lastNameController.text,
-          'username': _usernameController.text,
-          'telephone': _telephoneController.text,
-          'email': _emailController.text,
-          'password': _passwordController.text,
-          'createdAt': DateTime.now().toIso8601String(),
-        };
-
-        DatabaseHelper.instance.insertUser(user);
+        final apiService = ApiService();
+        await apiService.signup(
+          firstName: _firstNameController.text,
+          lastName: _lastNameController.text,
+          username: _usernameController.text,
+          email: _emailController.text,
+          password: _passwordController.text,
+          telephone: _telephoneController.text,
+        );
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -438,7 +423,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 40.0,
+            ),
             child: Form(
               key: _formKey,
               child: Column(
@@ -460,10 +448,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   const SizedBox(height: 20),
                   const Text(
                     'Create Account',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 20),
                   TextFormField(

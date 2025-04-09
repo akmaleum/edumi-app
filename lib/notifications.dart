@@ -1,6 +1,6 @@
 // lib/notifications.dart
 import 'package:flutter/material.dart';
-import 'status.dart';
+import 'app_status.dart';
 import 'profile.dart';
 import 'widget/navbar.dart'; // Import the custom nav bar
 
@@ -93,7 +93,7 @@ class NotificationsScreen extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: CustomBottomNavBar(
+      bottomNavigationBar: NavBar(
         currentIndex: 1,
         onTap: (index) {
           if (index == 0) {

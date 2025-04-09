@@ -1,14 +1,16 @@
-// lib/edit_profile.dart
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'notifications.dart';
-import 'status.dart';
-import 'widget/navbar.dart'; // Import the custom nav bar
+import 'app_status.dart';
+import 'widget/navbar.dart';
+import 'api/api_service.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final String firstName;
   final String lastName;
   final String username;
   final String email;
+  final String telephone;
 
   const EditProfileScreen({
     super.key,
@@ -16,6 +18,7 @@ class EditProfileScreen extends StatefulWidget {
     required this.lastName,
     required this.username,
     required this.email,
+    this.telephone = '',
   });
 
   @override
@@ -27,29 +30,30 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _lastNameController;
   late TextEditingController _usernameController;
   late TextEditingController _emailController;
-  final _formKey = GlobalKey<FormState>(); // Add a form key for validation
+  late TextEditingController _telephoneController;
+  final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    // Initialize controllers with passed values
     _firstNameController = TextEditingController(text: widget.firstName);
     _lastNameController = TextEditingController(text: widget.lastName);
     _usernameController = TextEditingController(text: widget.username);
     _emailController = TextEditingController(text: widget.email);
+    _telephoneController = TextEditingController(text: widget.telephone);
   }
 
   @override
   void dispose() {
-    // Dispose controllers to free up resources
     _firstNameController.dispose();
     _lastNameController.dispose();
     _usernameController.dispose();
     _emailController.dispose();
+    _telephoneController.dispose();
     super.dispose();
   }
 
-  // Email validation function
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
       return 'Email is required';
@@ -61,12 +65,71 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return null;
   }
 
-  // General required field validation
+  String? _validateTelephone(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Telephone number is required';
+    }
+    if (!value.startsWith('+60')) {
+      return 'Telephone number must start with +60';
+    }
+    final number = value.substring(3);
+    final phoneRegex = RegExp(r'^[1-9]\d{8,9}$');
+    if (!phoneRegex.hasMatch(number)) {
+      return 'Please enter a valid Malaysian phone number (9-10 digits after +60)';
+    }
+    return null;
+  }
+
   String? _validateRequired(String? value, String fieldName) {
     if (value == null || value.isEmpty) {
       return '$fieldName is required';
     }
     return null;
+  }
+
+  Future<void> _updateProfile() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final userId = prefs.getInt('userId');
+        if (userId == null) {
+          throw 'User not logged in';
+        }
+
+        final apiService = ApiService();
+        await apiService.updateProfile(
+          userId: userId,
+          firstName: _firstNameController.text,
+          lastName: _lastNameController.text,
+          username: _usernameController.text,
+          email: _emailController.text,
+          telephone: _telephoneController.text,
+        );
+
+        Navigator.pop(context, {
+          'firstName': _firstNameController.text,
+          'lastName': _lastNameController.text,
+          'username': _usernameController.text,
+          'email': _emailController.text,
+          'telephone': _telephoneController.text,
+        });
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -86,18 +149,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
-            Navigator.pop(context); // Navigate back to ProfileScreen
+            Navigator.pop(context);
           },
         ),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
         child: Form(
-          key: _formKey, // Add Form widget for validation
+          key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // First Name and Last Name Row
               Row(
                 children: [
                   Expanded(
@@ -128,8 +190,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-
-              // Username Field
               TextFormField(
                 controller: _usernameController,
                 decoration: InputDecoration(
@@ -141,8 +201,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 validator: (value) => _validateRequired(value, 'Username'),
               ),
               const SizedBox(height: 16),
-
-              // Email Field
               TextFormField(
                 controller: _emailController,
                 decoration: InputDecoration(
@@ -153,40 +211,42 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
                 validator: _validateEmail,
               ),
-              const SizedBox(height: 24),
-
-              // Update Information Button
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      // If the form is valid, return the updated values to ProfileScreen
-                      Navigator.pop(context, {
-                        'firstName': _firstNameController.text,
-                        'lastName': _lastNameController.text,
-                        'username': _usernameController.text,
-                        'email': _emailController.text,
-                      });
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                  child: const Text(
-                    'Update Information',
-                    style: TextStyle(fontSize: 16, color: Colors.white),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _telephoneController,
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(
+                  labelText: 'Telephone No.',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
+                validator: _validateTelephone,
+              ),
+              const SizedBox(height: 24),
+              Center(
+                child: _isLoading
+                    ? const CircularProgressIndicator()
+                    : ElevatedButton(
+                        onPressed: _updateProfile,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        child: const Text(
+                          'Update Information',
+                          style: TextStyle(fontSize: 16, color: Colors.white),
+                        ),
+                      ),
               ),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: CustomBottomNavBar(
+      bottomNavigationBar: NavBar(
         currentIndex: 3,
         onTap: (index) {
           if (index == 0) {
@@ -206,7 +266,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
             );
           } else if (index == 3) {
-            Navigator.pop(context); // Navigate back to ProfileScreen
+            Navigator.pop(context);
           }
         },
       ),

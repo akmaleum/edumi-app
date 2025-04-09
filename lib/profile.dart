@@ -1,11 +1,10 @@
-// lib/profile.dart
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'edit_profile.dart';
 import 'notifications.dart';
-import 'status.dart';
-import 'widget/navbar.dart'; // Import the custom nav bar
-import 'database_helper.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'app_status.dart';
+import 'widget/navbar.dart';
+import 'api/api_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -19,33 +18,65 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String lastName = '';
   String username = '';
   String email = '';
-  int? userId;
+  String telephone = '';
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _fetchProfile();
   }
 
-  Future<void> _loadUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final storedUsername = prefs.getString('username');
-    if (storedUsername != null) {
-      final user = await DatabaseHelper.instance.getUserByUsername(storedUsername);
-      if (user != null) {
-        setState(() {
-          userId = user['id'];
-          firstName = user['firstName'];
-          lastName = user['lastName'];
-          username = user['username'];
-          email = user['email'];
-        });
+  Future<void> _fetchProfile() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('userId');
+      if (userId == null) {
+        throw 'User not logged in';
       }
+
+      final apiService = ApiService();
+      final profile = await apiService.fetchProfile(userId);
+
+      setState(() {
+        firstName = profile['first_name'] ?? '';
+        lastName = profile['last_name'] ?? '';
+        username = profile['username'] ?? '';
+        email = profile['email'] ?? '';
+        telephone = profile['telephone'] ?? '';
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error fetching profile: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
+  }
+
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      '/login',
+      (Route<dynamic> route) => false,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -58,14 +89,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         elevation: 0,
         backgroundColor: Colors.white,
-        automaticallyImplyLeading: false, // Remove back arrow
+        automaticallyImplyLeading: false,
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Profile Picture and User Details
             Row(
               children: [
                 Stack(
@@ -124,7 +154,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(width: 8),
                           GestureDetector(
                             onTap: () async {
-                              // Navigate to EditProfileScreen and wait for result
                               final updatedProfile = await Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -133,17 +162,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     lastName: lastName,
                                     username: username,
                                     email: email,
+                                    telephone: telephone,
                                   ),
                                 ),
                               );
 
-                              // Update state with new values if the result is not null
                               if (updatedProfile != null) {
                                 setState(() {
                                   firstName = updatedProfile['firstName'];
                                   lastName = updatedProfile['lastName'];
                                   username = updatedProfile['username'];
                                   email = updatedProfile['email'];
+                                  telephone = updatedProfile['telephone'];
+
+                                  // Update username in SharedPreferences
+                                  SharedPreferences.getInstance().then((prefs) {
+                                    prefs.setString('username', username);
+                                  });
                                 });
                               }
                             },
@@ -194,12 +229,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
             const SizedBox(height: 40),
-
-            // Menu Options
             _buildMenuOption(
               title: 'Edit profile',
               onTap: () async {
-                // Navigate to EditProfileScreen and wait for result
                 final updatedProfile = await Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -208,17 +240,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       lastName: lastName,
                       username: username,
                       email: email,
+                      telephone: telephone,
                     ),
                   ),
                 );
 
-                // Update state with new values if the result is not null
                 if (updatedProfile != null) {
                   setState(() {
                     firstName = updatedProfile['firstName'];
                     lastName = updatedProfile['lastName'];
                     username = updatedProfile['username'];
                     email = updatedProfile['email'];
+                    telephone = updatedProfile['telephone'];
+
+                    // Update username in SharedPreferences
+                    SharedPreferences.getInstance().then((prefs) {
+                      prefs.setString('username', username);
+                    });
                   });
                 }
               },
@@ -226,29 +264,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 16),
             _buildMenuOption(
               title: 'Settings',
-              onTap: () {
-                // Add navigation or action for Settings
-              },
+              onTap: () {},
             ),
             const SizedBox(height: 16),
             _buildMenuOption(
               title: 'Support',
-              onTap: () {
-                // Add navigation or action for Support
-              },
+              onTap: () {},
             ),
             const SizedBox(height: 40),
-
-            // Log out Button
             GestureDetector(
-              onTap: () {
-                // Navigate back to LoginScreen and clear the navigation stack
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  '/login',
-                  (Route<dynamic> route) => false,
-                );
-              },
+              onTap: _logout,
               child: const Text(
                 'Log out',
                 style: TextStyle(
@@ -261,7 +286,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: CustomBottomNavBar(
+      bottomNavigationBar: NavBar(
         currentIndex: 3,
         onTap: (index) {
           if (index == 0) {
