@@ -4,13 +4,13 @@ A new Flutter project.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+ssh -L 3306:edumi.mysql.pythonanywhere-services.com:3306 edumi@ssh.pythonanywhere.com 
 
-A few resources to get you started if this is your first Flutter project:
+pw : #EDUMi!5197@2025
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+mysql -h 127.0.0.1 -P 3306 -u edumi -p
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+USE edumi$db;
+
+SHOW TABLES;
+
