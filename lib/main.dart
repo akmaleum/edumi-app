@@ -6,7 +6,6 @@ void main() {
   runApp(const EdumiApp());
 }
 
-
 class EdumiApp extends StatelessWidget {
   const EdumiApp({super.key});
 
