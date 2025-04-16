@@ -11,6 +11,7 @@ class ApplicationStatusScreen extends StatefulWidget {
   _ApplicationStatusScreenState createState() => _ApplicationStatusScreenState();
 }
 
+
 class _ApplicationStatusScreenState extends State<ApplicationStatusScreen> {
   int _currentIndex = 2;
 
