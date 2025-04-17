@@ -1,4 +1,4 @@
-# edumi_app
+# edumi-app
 
 A new Flutter project.
 
