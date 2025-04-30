@@ -4,7 +4,7 @@ import 'notifications_screen.dart';
 import 'application_status_screen.dart';
 import 'my_profile_screen.dart';
 import '../widgets/bottom_nav_bar.dart';
-import 'package:edumi_mobile/models/user.dart'; // Import the UserState
+import 'package:edumi_mobile_app/models/user.dart'; // Import the UserState
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});

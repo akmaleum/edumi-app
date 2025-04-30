@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:animations/animations.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:edumi_mobile/models/blog_post.dart';
+import 'package:edumi_mobile_app/models/blog_post.dart';
 import 'consultation_scheduling_screen.dart';
 import 'notifications_screen.dart';
 import 'my_profile_screen.dart';
